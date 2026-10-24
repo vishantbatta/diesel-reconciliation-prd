@@ -1,0 +1,1294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Diesel Reconciliation Dashboard — PRD (V1)</title>
+<script id="auto-designer-preview-contract" type="application/json">
+{
+  "artifactRole": "web-page",
+  "authoringViewport": { "width": 1440, "height": 900 },
+  "deviceAdaptation": { "enabled": true, "strategy": "responsive", "supportedDevices": ["desktop","tablet","mobile"] },
+  "breakpoints": { "mobileMax": 767, "tabletMin": 768, "tabletMax": 1023, "desktopMin": 1024 },
+  "defaultDevice": "desktop"
+}
+</script>
+<style>
+:root{
+  --bg:#fbfbf9;--surface:#ffffff;--fg:#1c2221;--muted:#5b6562;--border:#e3e5df;
+  --accent:#14524f;
+  --ok:#1c7a4a;--warn:#a4670a;--bad:#a52a1e;--neutral:#8d938f;
+  --accent-soft:#14524f14;
+  --fg-soft:#1c22210d;
+  --font-display:'Iowan Old Style','Charter',Georgia,'Times New Roman',serif;
+  --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --font-mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
+  --fs-h1:clamp(30px,3.6vw,42px);--fs-h2:clamp(24px,2.8vw,32px);
+  --r:6px;--r-lg:12px;--container:1120px;--gutter:28px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:clip}
+img,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+h1,h2,h3,h4{margin:0;text-wrap:balance}
+p{margin:0;text-wrap:pretty}
+ul,ol{margin:0;padding:0;list-style:none}
+section{scroll-margin-top:84px}
+.container{max-width:var(--container);margin-inline:auto;padding-inline:var(--gutter)}
+.section{padding-block:clamp(44px,5.4vw,68px)}
+.section + .section{border-top:1px solid var(--border)}
+
+h1{font-family:var(--font-display);font-size:var(--fs-h1);line-height:1.1;letter-spacing:-.02em;font-weight:600}
+h2{font-family:var(--font-display);font-size:var(--fs-h2);line-height:1.15;letter-spacing:-.018em;font-weight:600}
+h4{font-size:14px;font-weight:600;line-height:1.4}
+.lead{font-size:17.5px;line-height:1.6;color:var(--muted);max-width:66ch}
+.meta{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.02em}
+
+.topnav{position:sticky;top:0;z-index:20;background:rgba(251,251,249,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.topnav-inner{display:flex;align-items:center;justify-content:space-between;gap:24px;height:58px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;letter-spacing:-.01em;white-space:nowrap}
+.brand svg{width:18px;height:18px;color:var(--accent);flex:none}
+.brand small{font-family:var(--font-mono);font-weight:400;font-size:11px;color:var(--muted);letter-spacing:.04em}
+.topnav nav{display:flex;gap:20px}
+.topnav nav a{font-size:13px;color:var(--muted);transition:color .15s ease}
+.topnav nav a:hover,.topnav nav a:focus-visible{color:var(--fg)}
+.topnav nav a span{font-family:var(--font-mono);font-size:10px;color:var(--neutral);margin-right:4px}
+
+.dochead{padding-block:clamp(40px,5vw,64px) clamp(24px,3vw,36px)}
+.dochead h1{margin:12px 0 18px;max-width:24ch}
+.dochead .lead{max-width:62ch}
+.docmeta{display:grid;grid-template-columns:repeat(4,auto);gap:8px 40px;justify-content:start;margin-top:30px;border-top:1px solid var(--border);padding-top:16px}
+.docmeta dt{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--neutral)}
+.docmeta dd{margin:2px 0 0;font-size:13.5px}
+
+.sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:22px}
+.idx{font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;color:var(--accent);flex:none;padding-top:2px}
+.sub{margin-top:34px}
+.sub:first-of-type{margin-top:28px}
+.sub > h3{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:18px;font-weight:500}
+
+.prose{max-width:76ch}
+.prose p{font-size:15.5px;line-height:1.65;margin-bottom:14px;color:color-mix(in oklch,var(--fg) 88%,var(--muted))}
+.prose p:last-child{margin-bottom:0}
+.prose b{font-weight:600}
+
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(20px,3.6vw,44px);margin-top:30px}
+.stat .n{font-family:var(--font-display);font-size:clamp(34px,4.4vw,50px);line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.stat .l{margin-top:10px;font-size:14px;color:var(--muted);line-height:1.55;max-width:26em}
+
+.rows{display:grid;gap:0}
+.row{display:grid;grid-template-columns:22px 1fr;gap:14px;padding:14px 0;border-top:1px solid var(--border);align-items:start}
+.row .ic{color:var(--muted);padding-top:2px}
+.row .ic svg{width:17px;height:17px;stroke-width:1.6}
+.row h4{font-size:15px;margin-bottom:2px}
+.row p{font-size:14px;color:var(--muted);line-height:1.55;max-width:94ch}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 46px}
+.card{border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface);padding:20px 22px}
+.card h4{margin-bottom:6px}
+.card p{font-size:14px;color:var(--muted);line-height:1.6}
+
+.layers{margin-top:26px;display:grid;gap:0}
+.layer{border:1px solid var(--border);background:var(--surface);padding:20px 22px;display:grid;grid-template-columns:88px minmax(0,1fr) auto;grid-template-areas:"tag main chip";gap:22px;align-items:start}
+.layer:first-child{border-radius:var(--r-lg) var(--r-lg) 0 0}
+.layer:last-child{border-radius:0 0 var(--r-lg) var(--r-lg)}
+.layer + .layer{border-top:0}
+.layer-2{background:#14524f07}
+.layer-tag{grid-area:tag;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding-top:4px}
+.layer-main{grid-area:main;min-width:0}
+.layer-main h4{font-size:17px;margin-bottom:7px}
+.layer-main p{font-size:14px;color:var(--muted);line-height:1.6;max-width:62ch}
+.layer-chip{grid-area:chip}
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.chip.certain{background:#1c7a4a1f;color:var(--ok)}
+.chip.probable{background:#a4670a24;color:var(--warn)}
+.connector{display:flex;align-items:center;gap:10px;padding:8px 0 8px 22px;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.connector::before{content:"";width:1px;height:13px;background:var(--border)}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:26px}
+.note{border-top:1px solid var(--fg);padding-top:13px}
+.note h4{margin-bottom:5px}
+.note p{font-size:14px;line-height:1.6;color:var(--muted)}
+
+.comptable{width:100%;border-collapse:collapse;margin-top:8px}
+.comptable th{font-family:var(--font-mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);font-weight:500;white-space:nowrap}
+.comptable td{font-size:13.5px;padding:10px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5}
+.comptable td b{font-weight:600}
+.comptable .n{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.comptable .plumb{color:var(--neutral)}
+
+.steps{display:grid;gap:0;margin-top:6px}
+.step{display:grid;grid-template-columns:120px 1fr;gap:20px;padding:14px 0;border-top:1px solid var(--border);align-items:baseline}
+.step .t{font-family:var(--font-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.step h4{display:inline;font-size:15px}
+.step p{font-size:14px;color:var(--muted);line-height:1.55;margin-top:3px}
+
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}.dot.neutral{background:var(--neutral)}
+.status{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.status.bad{color:var(--bad)}.status.warn{color:var(--warn)}.status.ok{color:var(--ok)}.status.neutral{color:var(--neutral)}
+
+.pipe{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:16px;align-items:stretch;margin-top:8px}
+.pipe-col{min-width:0;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface);padding:16px 18px}
+.pipe-col > h4{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.pipe-col ul{display:grid;gap:10px}
+.pipe-col li{font-size:13px;line-height:1.5;color:var(--muted);border-top:1px solid var(--border);padding-top:10px}
+.pipe-col li:first-child{border-top:0;padding-top:0}
+.pipe-col b{display:block;color:var(--fg);font-weight:600;font-size:13.5px;margin-bottom:2px}
+.arrow{align-self:center;color:var(--muted);font-family:var(--font-mono);font-size:18px;line-height:1}
+
+.formula code{display:block;font-family:var(--font-mono);font-size:13px;background:var(--fg-soft);border-radius:var(--r);padding:10px 12px;margin-bottom:9px;line-height:1.5;word-break:break-word}
+.formula p{font-size:13.5px;color:var(--muted);line-height:1.55}
+
+.strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;background:var(--surface)}
+.cell{padding:16px;border-left:1px solid var(--border);min-width:0}
+.cell:first-child{border-left:0}
+.cell .status{margin-bottom:7px}
+.cell p{font-size:13px;color:var(--muted);line-height:1.5}
+.mrules{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:22px}
+.mrules h4{font-size:13.5px;margin-bottom:4px}
+.mrules p{font-size:13.5px;color:var(--muted);line-height:1.5}
+.flags{margin-top:22px;display:grid;gap:0}
+.flag{display:grid;grid-template-columns:170px 1fr;gap:16px;padding:10px 0;border-top:1px solid var(--border);align-items:baseline}
+.flag .k{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.flag p{font-size:13.5px;color:var(--muted);line-height:1.5}
+
+.assump{display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(26px,4vw,52px);align-items:start;margin-top:6px}
+.assump ul{display:grid}
+.assump li{font-size:14px;padding:11px 0;border-top:1px solid var(--border);color:var(--muted);line-height:1.55}
+.assump li b{color:var(--fg);font-weight:600}
+.confirm,.mailnote{border:1px solid var(--accent);border-radius:var(--r-lg);padding:20px;background:var(--accent-soft)}
+.confirm h4,.mailnote h4{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);margin-bottom:9px}
+.confirm p,.mailnote p{font-size:14.5px;line-height:1.6}
+
+.cases{display:grid;grid-template-columns:1fr 1fr;gap:0 46px}
+.case{padding:13px 0;border-top:1px solid var(--border)}
+.case h4{margin-bottom:2px}
+.case p{font-size:13.5px;color:var(--muted);line-height:1.5}
+
+.future{display:grid;grid-template-columns:repeat(4,1fr);gap:0 34px}
+.fut{border-top:1px solid var(--border);padding-top:11px;margin-bottom:18px}
+.fut p{font-size:13.5px;color:var(--muted);line-height:1.5}
+
+.band{margin-top:40px;border:1px solid var(--border);border-radius:var(--r-lg);padding:clamp(22px,3vw,32px);background:var(--surface);display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center}
+.band h3{font-family:var(--font-display);font-size:clamp(22px,2.4vw,28px);line-height:1.2;letter-spacing:-.015em}
+.band .side{font-size:14px;color:var(--muted);line-height:1.6}
+.site-foot{border-top:1px solid var(--border)}
+.site-foot .container{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding-block:24px}
+
+/* ================= interactive prototype ================= */
+.console{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface);margin-top:14px}
+.ctop{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--fg-soft)}
+.ctop svg{width:15px;height:15px;color:var(--accent)}
+.ctop .ct{font-size:12.5px;font-weight:600}
+.ctop .sp{flex:1}
+.sync{font-family:var(--font-mono);font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.cbody{display:grid;grid-template-columns:168px minmax(0,1fr)}
+.rail{border-right:1px solid var(--border);padding:12px 10px;background:var(--fg-soft);min-width:0;display:flex;flex-direction:column}
+.rail .rh{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--neutral);padding:0 8px 8px}
+.rail a{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 8px;border-radius:5px;color:var(--muted);cursor:pointer}
+.rail a:hover{color:var(--fg)}
+.rail a.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.rail a .cnt{margin-left:auto;font-family:var(--font-mono);font-size:10px;background:#a52a1e24;color:var(--bad);padding:1px 5px;border-radius:99px}
+.rail-foot{margin-top:auto;padding:12px 8px 2px;font-family:var(--font-mono);font-size:9.5px;line-height:1.5;color:var(--neutral)}
+.pane{padding:14px;min-width:0}
+.crumb{font-family:var(--font-mono);font-size:10.5px;color:var(--muted);margin-bottom:10px;min-height:14px}
+.crumb a{color:var(--accent);cursor:pointer}
+.filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-bottom:11px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.fchip,.btn{font-family:var(--font-mono);font-size:10.5px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;color:var(--muted);background:transparent;cursor:pointer}
+.fchip:hover,.btn:hover{color:var(--fg);border-color:var(--neutral)}
+.fchip.on{background:var(--fg);color:var(--surface);border-color:var(--fg)}
+.btn{font-size:11px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{opacity:.9}
+.btn:disabled{opacity:.55;cursor:default}
+.fsel{font-family:var(--font-body);font-size:11.5px;padding:4px 7px;border:1px solid var(--border);border-radius:5px;color:var(--muted);background:var(--surface)}
+.fsep{width:1px;height:16px;background:var(--border);margin:0 2px}
+.fsearch{font-size:11.5px;padding:4px 8px;border:1px solid var(--border);border-radius:5px;color:var(--fg);min-width:120px;background:var(--surface);outline:none}
+.fsearch:focus{border-color:var(--accent)}
+.flabel{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--neutral)}
+
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+.kpi{border:1px solid var(--border);border-radius:7px;padding:9px 10px;min-width:0}
+.kpi .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.kpi .v{font-family:var(--font-mono);font-size:16px;font-weight:600;margin-top:3px;letter-spacing:-.02em}
+.kpi .d{font-size:10.5px;color:var(--muted);margin-top:1px}
+.kpi .d.bad{color:var(--bad)}.kpi .d.ok{color:var(--ok)}
+.cols{display:grid;grid-template-columns:1.55fr 1fr;gap:12px}
+.cols.even{grid-template-columns:1fr 1fr}
+.panel{border:1px solid var(--border);border-radius:8px;padding:11px 12px;min-width:0}
+.panel h5{margin:0 0 9px;font-size:11px;font-family:var(--font-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:500;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.legend{display:flex;gap:12px;font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0}
+.legend i{display:inline-block;width:11px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.grid-lines{stroke:var(--border);stroke-width:1}
+.chart svg{width:100%;height:auto;display:block}
+.chart-x{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;color:var(--neutral);margin-top:4px}
+.hbar{display:grid;grid-template-columns:74px 1fr 38px;gap:7px;align-items:center;font-size:11px;margin-bottom:6px}
+.hbar .k{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar .v{font-family:var(--font-mono);font-size:10.5px;text-align:right}
+.track{height:6px;background:var(--fg-soft);border-radius:2px;overflow:hidden}
+.track i{display:block;height:100%;border-radius:2px;background:var(--bad)}
+.track i.w{background:var(--warn)}.track i.g{background:var(--ok)}.track i.n{background:var(--neutral)}
+.sites{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.scard{border:1px solid var(--border);border-radius:7px;padding:8px 9px;min-width:0;cursor:pointer;transition:border-color .12s}
+.scard:hover{border-color:var(--accent)}
+.scard .t{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.scard .v{font-family:var(--font-mono);font-size:14px;font-weight:600;margin-top:2px}
+.scard .s{font-family:var(--font-mono);font-size:9.5px;color:var(--neutral);margin-top:1px}
+.scard .v.bad{color:var(--bad)}.scard .v.warn{color:var(--warn)}.scard .v.ok{color:var(--ok)}
+.dtable{width:100%;border-collapse:collapse;font-size:11.5px}
+.dtable th{font-family:var(--font-mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);text-align:left;padding:5px 6px;border-bottom:1px solid var(--border);font-weight:500;white-space:nowrap}
+.dtable td{padding:6px;border-bottom:1px solid var(--border);white-space:nowrap}
+.dtable tr:last-child td{border-bottom:0}
+.dtable td.n{font-family:var(--font-mono);font-variant-numeric:tabular-nums;text-align:right}
+.dtable td b{font-weight:600}
+.dtable tbody tr.click{cursor:pointer}
+.dtable tbody tr.click:hover td{background:var(--fg-soft)}
+.comp{display:flex;height:9px;border-radius:3px;overflow:hidden;margin-bottom:8px}
+.comp span{display:block;height:100%}
+.complegend{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:10.5px;color:var(--muted)}
+.complegend i{display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:5px}
+.pillflag{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--border);border-radius:99px;padding:2px 7px;color:var(--muted)}
+.pillflag.bad{border-color:#a52a1e66;color:var(--bad)}
+.pillflag.ok{border-color:#1c7a4a66;color:var(--ok)}
+.mhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:11px;flex-wrap:wrap}
+.mhead .mh{font-size:15px;font-weight:600}
+.mhead .ms{font-family:var(--font-mono);font-size:10.5px;color:var(--muted);margin-top:2px}
+.bignums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.bignum{border:1px solid var(--border);border-radius:7px;padding:9px 10px}
+.bignum .k{font-family:var(--font-mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.bignum .v{font-family:var(--font-mono);font-size:19px;font-weight:600;margin-top:2px}
+.bignum .v.bad{color:var(--bad)}
+.vbars{display:flex;align-items:flex-end;gap:4px;height:74px;margin-top:6px}
+.vbars i{flex:1;background:#a52a1e73;border-radius:2px 2px 0 0;min-width:0}
+.vbars i.hi{background:var(--bad)}
+.anom{display:grid;gap:5px}
+.anom div{display:flex;gap:7px;align-items:flex-start;font-size:11px;color:var(--muted);line-height:1.4}
+.anom .dot{margin-top:4px}
+.causes{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.cause{font-size:10.5px;padding:3px 8px;border:1px solid var(--border);border-radius:99px;color:var(--muted);cursor:pointer;background:transparent}
+.cause:hover{color:var(--fg);border-color:var(--neutral)}
+.cause.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.closed-note{margin-top:8px;font-size:11px;color:var(--ok);display:flex;align-items:center;gap:6px}
+.scrollx{overflow-x:auto}
+.scrollx::-webkit-scrollbar{height:6px}
+.scrollx::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.alert-row{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:12px;align-items:flex-start;padding:11px 4px;border-top:1px solid var(--border)}
+.alert-row .meta-line{font-family:var(--font-mono);font-size:10px;color:var(--neutral);margin-top:3px}
+.alert-row h6{margin:0;font-size:13px;font-weight:600;line-height:1.4}
+.alert-row p{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45}
+.alert-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.mailchip{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:9.5px;color:var(--muted);border:1px dashed var(--border);border-radius:99px;padding:2px 8px}
+.mailchip svg{width:11px;height:11px}
+.email-banner{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;background:var(--fg-soft);padding:10px 12px;margin-bottom:12px}
+.email-banner svg{width:15px;height:15px;color:var(--accent);flex:none;margin-top:2px}
+.email-banner p{font-size:12px;color:var(--muted);line-height:1.5}
+.email-banner b{color:var(--fg)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);font-size:13px;padding:9px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:all .25s ease;z-index:50;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.nnorm{width:64px;font-family:var(--font-mono);font-size:11.5px;padding:4px 6px;border:1px solid var(--border);border-radius:5px;text-align:right;background:var(--surface);color:var(--fg)}
+.backlink{display:inline-flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10.5px;color:var(--accent);cursor:pointer;margin-bottom:10px}
+.empty{padding:26px;text-align:center;color:var(--neutral);font-size:12.5px;border:1px dashed var(--border);border-radius:8px}
+
+@media (max-width:1080px){
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .cols,.cols.even{grid-template-columns:1fr}
+  .sites{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:900px){
+  .cbody{grid-template-columns:1fr}
+  .rail{flex-direction:row;flex-wrap:wrap;gap:4px;border-right:0;border-bottom:1px solid var(--border);overflow-x:auto;padding:8px}
+  .rail .rh,.rail-foot{display:none}
+  .rail a{white-space:nowrap;padding:5px 8px}
+  .rail a .cnt{display:none}
+}
+@media (max-width:1000px){.topnav nav a:nth-child(n+5){display:none}}
+@media (max-width:960px){
+  .layer{grid-template-columns:1fr auto;grid-template-areas:"tag chip" "main main";gap:8px 14px}
+  .pipe{grid-template-columns:1fr;gap:10px}
+  .arrow{justify-self:center;transform:rotate(90deg)}
+  .grid2,.notes,.cases,.mrules,.assump,.band{grid-template-columns:1fr;gap:0 24px}
+  .notes,.mrules{gap:22px}
+  .stat-grid{grid-template-columns:1fr;gap:24px}
+  .strip{grid-template-columns:1fr 1fr}
+  .cell:nth-child(3){border-left:0}
+  .cell:nth-child(1),.cell:nth-child(2){border-bottom:1px solid var(--border)}
+  .future{grid-template-columns:1fr 1fr}
+  .docmeta{grid-template-columns:1fr 1fr}
+}
+@media (max-width:860px){.topnav nav{display:none}}
+@media (max-width:600px){
+  .step{grid-template-columns:1fr;gap:3px}
+  .flag{grid-template-columns:1fr;gap:2px}
+  .strip{grid-template-columns:1fr}
+  .cell{border-left:0;border-top:1px solid var(--border)}
+  .cell:first-child{border-top:0}
+  .future{grid-template-columns:1fr}
+  .sec-head{gap:12px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .sites{grid-template-columns:1fr}
+  .bignums{grid-template-columns:1fr}
+  .complegend{grid-template-columns:1fr}
+  .alert-row{grid-template-columns:10px minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="topnav">
+  <div class="container topnav-inner">
+    <a class="brand" href="#top">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 20V9l7-5 7 5v11"/><path d="M9 20v-6h4v6"/></svg>
+      Diesel <small>PRD · V1</small>
+    </a>
+    <nav>
+      <a href="#background"><span>1</span>Background</a>
+      <a href="#approach"><span>2</span>Approach</a>
+      <a href="#scope"><span>3</span>Scope</a>
+      <a href="#journey"><span>4</span>Journey</a>
+      <a href="#prototype"><span>5</span>Prototype</a>
+      <a href="#tech"><span>6</span>Tech design</a>
+      <a href="#assumptions"><span>7</span>Open questions</a>
+      <a href="#edge"><span>8</span>Edge cases</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="dochead">
+  <div class="container">
+    <p class="meta">Product requirements &nbsp;·&nbsp; Diesel only &nbsp;·&nbsp; Version 1</p>
+    <h1>Diesel Reconciliation Dashboard</h1>
+    <p class="lead">A daily dashboard that turns site-level diesel records into a red flag within two or three days, and then narrows the blame to the machine most likely causing it. Scope for V1 is diesel only.</p>
+    <dl class="docmeta">
+      <div><dt>Status</dt><dd>Draft, for review</dd></div>
+      <div><dt>Last updated</dt><dd>24 Oct 2026</dd></div>
+      <div><dt>Source</dt><dd>Discovery call with a director-level construction operator</dd></div>
+      <div><dt>Alerts channel (V1)</dt><dd>Email — digest plus immediate red alerts</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section class="section" id="background">
+  <div class="container">
+    <div class="sec-head"><span class="idx">01</span><h2>Background</h2></div>
+    <div class="prose">
+      <p>Diesel leaks quietly on construction sites, and by the time anyone notices, the money is gone. The case that triggered this project: an earthworks job worth roughly one crore, where diesel spend landed at ₹50–60 lakh against an expectation of about ₹35 lakh. The overrun ran for two to three months before a director pulled the records himself and found it. The data was there the whole time — site diesel was being captured every day. What was missing was any comparison against what the machines <b>should</b> have burned.</p>
+      <p>That detail shaped the whole product. The loss surfaced as a site-level number first, and only later got narrowed to specific machines. We are building exactly that workflow, because machine-level fuel metering does not exist on these sites and nobody is going to install it for V1.</p>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><div class="n">₹50–60L</div><p class="l">Diesel burned on a ₹1 crore earthwork job. About ₹35 lakh was expected.</p></div>
+      <div class="stat"><div class="n">2–3 mo</div><p class="l">How long the overrun ran before anyone looked. The records existed throughout.</p></div>
+      <div class="stat"><div class="n">5–6%</div><p class="l">Real construction margins, against the 10% everyone plans for. One caught leak pays for the tool.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="approach">
+  <div class="container">
+    <div class="sec-head"><span class="idx">02</span><h2>Product approach: two layers, never mixed</h2></div>
+    <div class="prose">
+      <p>The dashboard answers two questions, and they are not the same kind of question. The first — <b>is this site burning too much diesel?</b> — is arithmetic, and it is the only number we defend without caveats. The second — <b>which machine is causing it?</b> — is a statistical claim, and the interface has to declare that every single time it shows one. The first wrong accusation would cost more trust than ten missed leaks are worth.</p>
+    </div>
+
+    <div class="layers">
+      <div class="layer">
+        <div class="layer-tag">Layer 1</div>
+        <div class="layer-main">
+          <h4>Site reconciliation — is this site over?</h4>
+          <p>Actual site diesel issued, compared against what the machines should have burned at their norms. Displayed daily, judged on a seven-day rolling window.</p>
+        </div>
+        <div class="layer-chip"><span class="chip certain"><span class="dot ok"></span>Certain</span></div>
+      </div>
+      <div class="connector">Runs only when the site is amber or red</div>
+      <div class="layer layer-2">
+        <div class="layer-tag">Layer 2</div>
+        <div class="layer-main">
+          <h4>Machine attribution — who is likely responsible?</h4>
+          <p>Diesel is recorded per site, so no machine has a measured fuel number. We infer one from how site diesel moves with each machine's hours, and return a ranked list with confidence — never a verdict.</p>
+        </div>
+        <div class="layer-chip"><span class="chip probable"><span class="dot warn"></span>Probable</span></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note">
+        <h4>The mental model</h4>
+        <p>A site's diesel bill behaves like a household electricity bill. You find the guilty appliance by watching which one's usage moves in step with the bill across weeks. Same idea here, with machines and tanker fills.</p>
+      </div>
+      <div class="note">
+        <h4>Attribution is not the only signal</h4>
+        <p>Usage data alone can flag trouble even when fuel cannot be split: abnormal idle ratios, run hours beyond physical capacity, night running, hours spiking without output. These run independently of Layer 2.</p>
+      </div>
+    </div>
+
+    <div class="rows" style="margin-top:26px">
+      <div class="row">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M12 3 3 7v6c0 5 4 7.5 9 8 5-.5 9-3 9-8V7l-9-4Z"/><path d="M9 12l2 2 4-4"/></svg></span>
+        <div><h4>Honesty constraints</h4><p>An inferred machine number is never displayed as a measured one. If the data cannot separate the machines, the tool says so and shows site level only. Below 50% confidence it names nobody — the gap is reported as unattributed.</p></div>
+      </div>
+      <div class="row">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M4 18 9 8l4 6 3-4 4 8Z"/></svg></span>
+        <div><h4>Unattributed is a finding, not a failure</h4><p>Whatever the machines cannot account for is reported as unattributed variance. It has real causes: tank-level loss, DG sets and small tools that carry no telemetry, or pilferage. A large unattributed share points the investigation somewhere useful.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="scope">
+  <div class="container">
+    <div class="sec-head"><span class="idx">03</span><h2>V1 scope</h2></div>
+    <p class="lead">Nine components. The first three are plumbing, the middle four are the product, and the last two exist to keep the whole thing honest.</p>
+    <table class="comptable">
+      <thead><tr><th>#</th><th>Component</th><th>What it does</th><th class="n">Category</th></tr></thead>
+      <tbody>
+        <tr><td class="n">1</td><td><b>Connectors</b></td><td>Automated pulls — site diesel from SAP or the stores system, machine hours and kilometres from OEM telematics. No site staff in the loop.</td><td class="n plumb">Plumbing</td></tr>
+        <tr><td class="n">2</td><td><b>Machine master &amp; cross-reference</b></td><td>One machine, one identity, mapped to its OEM serial and to its site. Everything downstream hangs off this table.</td><td class="n plumb">Plumbing</td></tr>
+        <tr><td class="n">3</td><td><b>Site-diesel builder</b></td><td>Turns irregular tanker fills into a clean daily series per site. Handles plain litres and cumulative meter readings.</td><td class="n plumb">Plumbing</td></tr>
+        <tr><td class="n">4</td><td><b>Norms library</b></td><td>Litres per hour by machine type, with per-machine overrides. Recalibrated weekly from history, subject to approval.</td><td class="n">Product</td></tr>
+        <tr><td class="n">5</td><td><b>Layer 1 engine</b></td><td>Site reconciliation, computed daily plus a seven-day rolling view.</td><td class="n">Product</td></tr>
+        <tr><td class="n">6</td><td><b>Layer 2 engine</b></td><td>Back-solves implied consumption per machine from how site diesel moves with each machine's hours; ranks suspects with confidence.</td><td class="n">Product</td></tr>
+        <tr><td class="n">7</td><td><b>Usage anomaly detector</b></td><td>Idle ratio, hours-per-day outliers, night running, capacity breaches, consecutive-day streaks.</td><td class="n">Product</td></tr>
+        <tr><td class="n">8</td><td><b>Dashboard</b></td><td>Site cards first. Tap a red site for ranked suspects, the trend and the rupee value. Drill into any machine.</td><td class="n">Product</td></tr>
+        <tr><td class="n">9</td><td><b>Sync health &amp; exception queue</b></td><td>Stale feeds and unmapped machines surface loudly. A quiet dashboard is a bug, not a success.</td><td class="n">Safety</td></tr>
+      </tbody>
+    </table>
+    <div class="mailnote" style="margin-top:26px">
+      <h4>V1 delivery note — alerts by email</h4>
+      <p>V1 has no mobile app and no notification centre. Alerts reach users <b>by email</b>: a daily digest in the morning (site statuses, new suspects, sync issues) plus an immediate email when a site goes red or a streak escalates. Recipients are configured per project — typically the project manager, stores, and the director. In-app notifications and WhatsApp are V2 candidates; see Future scope.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="journey">
+  <div class="container">
+    <div class="sec-head"><span class="idx">04</span><h2>User journey</h2></div>
+    <div class="steps">
+      <div class="step"><span class="t">Overnight</span><div><h4>Nobody enters data</h4><p>Site diesel and machine hours arrive automatically from the connectors.</p></div></div>
+      <div class="step"><span class="t">07:30</span><div><h4>Email digest goes out</h4><p>The PM gets one email: which sites are red, which are new since yesterday, any sync problems. Site 3 red at +28%, Site 5 amber at +14%, the rest green. Certain, no ambiguity.</p></div></div>
+      <div class="step"><span class="t">Morning</span><div><h4>He opens the dashboard</h4><p>Site cards confirm the email. Tapping the red site opens the detail.</p></div></div>
+      <div class="step"><span class="t">Tap</span><div><h4>The red site opens</h4><p>The split: excess of about 4,200 litres, about ₹3.1 lakh this month.</p></div></div>
+      <div class="step"><span class="t">Read</span><div><h4>The suspect list</h4><p>EX-14 at an implied 22 L/h against a norm of 15, confidence 82%, nine days running. JCB-7 as a weaker lead. What the machines cannot account for shows up as unattributed — roughly a fifth of the excess.</p></div></div>
+      <div class="step"><span class="t">Check</span><div><h4>The machine trend</h4><p>The spikes line up with a shift, an operator, or a fault. This is where the cause usually becomes obvious.</p></div></div>
+      <div class="step"><span class="t">Log</span><div><h4>The cause is marked</h4><p>Fault, pilferage, terrain or underestimation. The flag stops nagging and the history keeps the answer.</p></div></div>
+      <div class="step"><span class="t">Fallback</span><div><h4>If machines cannot be separated</h4><p>The tool says so and shows site level only. It does not invent a ranking.</p></div></div>
+      <div class="step"><span class="t">Weekly</span><div><h4>The director reads a ranking</h4><p>All sites ranked by variance, with drill-down only where it is red. The Monday email carries the same ranking.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="prototype">
+  <div class="container">
+    <div class="sec-head"><span class="idx">05</span><h2>Interactive prototype</h2></div>
+    <div class="prose">
+      <p>This is the whole console, working, on sample data — 9 sites, 11 machines, one month. Everything you can click does something: the sidebar moves between pages, filters actually filter, site cards and machine rows drill down, causes can be marked (which closes the matching alert), norms are editable, and the stale Site 8 feed on Sync health can be retried. In V1, alerts on this page go out by email — each alert row shows the mail that was sent.</p>
+    </div>
+
+    <div class="console" id="app">
+      <div class="ctop">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg>
+        <span class="ct">Diesel console</span>
+        <span class="sp"></span>
+        <span class="sync"><span class="dot ok"></span><span id="syncStamp">Synced 07:40, 12 min ago</span></span>
+      </div>
+      <div class="cbody">
+        <aside class="rail">
+          <div class="rh">Workspace</div>
+          <a data-nav="overview">Overview</a>
+          <a data-nav="sites">Sites <span class="cnt" id="cntSites"></span></a>
+          <a data-nav="machines">Machines <span class="cnt" id="cntMachines"></span></a>
+          <a data-nav="alerts">Alerts <span class="cnt" id="cntAlerts"></span></a>
+          <a data-nav="norms">Norms</a>
+          <a data-nav="sync">Sync health <span class="cnt" id="cntSync"></span></a>
+          <div class="rail-foot">Sample data.<br>Not connected to SAP or OEM.</div>
+        </aside>
+        <div class="pane">
+          <div class="filters" id="filters">
+            <span class="flabel">Window</span>
+            <button class="fchip" data-range="7">7 days</button>
+            <button class="fchip" data-range="14">14 days</button>
+            <button class="fchip on" data-range="30">30 days</button>
+            <span class="fsep"></span>
+            <select class="fsel" id="fSite" aria-label="Site filter"><option value="all">All sites</option></select>
+            <select class="fsel" id="fType" aria-label="Machine type filter"><option value="all">All machine types</option></select>
+            <span class="fsep"></span>
+            <span class="flabel">Status</span>
+            <button class="fchip" data-status="bad">Red</button>
+            <button class="fchip" data-status="warn">Amber</button>
+            <button class="fchip" data-status="neutral">Grey</button>
+            <button class="fchip on" data-status="all">All</button>
+            <span class="fsep"></span>
+            <select class="fsel" id="fGroup" aria-label="Group by"><option value="site">Group by: site</option><option value="type">Group by: type</option><option value="machine">Group by: machine</option></select>
+            <input type="search" class="fsearch" id="fQ" placeholder="Search machine…" aria-label="Search machine">
+            <span style="flex:1"></span>
+            <button class="btn" id="btnReset">Reset</button>
+          </div>
+          <div class="crumb" id="crumb"></div>
+          <div id="view"></div>
+        </div>
+      </div>
+    </div>
+    <p class="meta" style="margin-top:10px">Prototype on sample data. Numbers are internally consistent (site = Σ machine × norm + variance) but not from a live source.</p>
+  </div>
+</section>
+
+<section class="section" id="tech">
+  <div class="container">
+    <div class="sec-head"><span class="idx">06</span><h2>Technical design</h2></div>
+
+    <div class="sub">
+      <h3>Data flow</h3>
+      <div class="pipe">
+        <div class="pipe-col">
+          <h4>Capture</h4>
+          <ul>
+            <li><b>Connectors</b>Site diesel from SAP or stores. Machine hours and kilometres from OEM telematics.</li>
+            <li><b>Raw ingest log</b>Every payload stored with its source reference. Nothing overwritten, ever.</li>
+          </ul>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="pipe-col">
+          <h4>Compute</h4>
+          <ul>
+            <li><b>Identity mapping and validation</b>OEM serial → machine → site, resolved per day. Bad records quarantined, not dropped.</li>
+            <li><b>Site daily diesel and machine usage</b>The two clean inputs everything else reads.</li>
+            <li><b>Layer 1</b>Site reconciliation, exact arithmetic.</li>
+            <li><b>Layer 2 + anomaly scan</b>Attribution, confidence, usage flags. Only for sites that are amber or red.</li>
+          </ul>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="pipe-col">
+          <h4>Surface</h4>
+          <ul>
+            <li><b>Dashboard</b>Site cards, drill-down, suspect list, trend.</li>
+            <li><b>Email (V1)</b>Morning digest plus immediate mail on new red sites and streak escalations.</li>
+            <li><b>Alerts</b>Also visible in the console's Alerts page with delivery status.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <h3>Layer 1 math — exact</h3>
+      <div class="formula">
+        <code>ideal_site_day = Σ ( machine_hours × norm ) + other_use_allowance</code>
+        <code>variance = actual_site_diesel − ideal_site_day</code>
+        <p>Displayed daily for freshness, but judged on a seven-day rolling window, because fills are irregular and single days are noisy. The other-use allowance per site covers DG sets, small tools and site vehicles that burn diesel but carry no telemetry. Without it, every machine on the site looks guilty.</p>
+      </div>
+    </div>
+
+    <div class="sub">
+      <h3>Layer 2 math — inference</h3>
+      <div class="formula">
+        <code>issued[t] ≈ Σ β[machine] × hours[t]</code>
+        <p>Fit daily site diesel against each machine's hours across a window, using least squares with ridge regularisation — machines that move together would otherwise produce fake certainty. Output per machine: implied litres per hour, deviation from norm, confidence, rank. Attribution needs at least fourteen days of history and some variation in schedules; below that it is suppressed and the tool shows site level only.</p>
+      </div>
+    </div>
+
+    <div class="sub">
+      <h3>Triggers</h3>
+      <div class="grid2">
+        <div class="rows">
+          <div class="row" style="grid-template-columns:1fr"><div><h4>On every successful sync</h4><p>Rebuild the affected site days, recompute Layer 1, and if the site is amber or red run Layer 2 plus the anomaly scan, then update the dashboard and queue email changes for the digest.</p></div></div>
+          <div class="row" style="grid-template-columns:1fr"><div><h4>Scheduled syncs</h4><p>Every one to four hours per source, with a full daily close at 23:00.</p></div></div>
+          <div class="row" style="grid-template-columns:1fr"><div><h4>Retro source edit</h4><p>A corrected record recomputes the affected day and keeps the audit entry.</p></div></div>
+        </div>
+        <div class="rows">
+          <div class="row" style="grid-template-columns:1fr"><div><h4>New machine mapped</h4><p>Its history is backfilled automatically.</p></div></div>
+          <div class="row" style="grid-template-columns:1fr"><div><h4>Sync failure or no data by cutoff</h4><p>A sync-health alert emails IT or stores immediately. Never a calm-looking blank dashboard.</p></div></div>
+          <div class="row" style="grid-template-columns:1fr"><div><h4>Weekly</h4><p>Norms recalibrated from history and emailed for approval before they take effect.</p></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <h3>Status conditions</h3>
+      <div class="strip">
+        <div class="cell"><span class="status ok"><span class="dot ok"></span>Green</span><p>Within 10% over, on the seven-day rolling window.</p></div>
+        <div class="cell"><span class="status warn"><span class="dot warn"></span>Amber</span><p>Between 10% and 25% over.</p></div>
+        <div class="cell"><span class="status bad"><span class="dot bad"></span>Red</span><p>More than 25% over. Attribution starts here.</p></div>
+        <div class="cell"><span class="status neutral"><span class="dot neutral"></span>Grey</span><p>No diesel or no usage data. Never rendered as green.</p></div>
+      </div>
+      <div class="mrules">
+        <div><h4>Machine red</h4><p>Implied litres per hour above norm by more than 25%, and confidence at 80% or higher.</p></div>
+        <div><h4>Machine amber</h4><p>A deviation is present, but confidence sits between 50% and 80%.</p></div>
+        <div><h4>Not listed</h4><p>Below 50% confidence the machine is not named at all. The gap is reported as unattributed.</p></div>
+      </div>
+      <div class="flags">
+        <div class="flag"><span class="k">Fuel without work</span><p>Site diesel above zero while total hours are close to zero.</p></div>
+        <div class="flag"><span class="k">Streak escalation</span><p>Three or more consecutive red days raises an escalated email to the director, not just the PM.</p></div>
+        <div class="flag"><span class="k">Unattributed 30%+</span><p>More than 30% of the excess unaccounted for is flagged as likely non-machine loss: tank, pilferage or other.</p></div>
+      </div>
+    </div>
+
+    <div class="sub">
+      <h3>Email alerts (V1)</h3>
+      <div class="prose">
+        <p>Email is the only alerting channel in V1. Three mail types:</p>
+        <p><b>Daily digest (07:30).</b> One email per project: every site with its status and seven-day variance, machines newly listed as suspects, any alerts opened or closed yesterday, and sync problems. Plain text plus a link into the console.</p>
+        <p><b>Immediate red alert.</b> Sent as soon as a site crosses into red or a three-day streak escalates. Goes to the PM; streak escalations add the director.</p>
+        <p><b>Weekly ranking (Monday).</b> All sites ranked by variance, same content the director sees on the dashboard.</p>
+        <p>Every alert shown in the console records which mail went out, to whom, and when — so the dashboard and the inbox never disagree. Recipients are configured per project at setup; no self-serve subscription management in V1.</p>
+      </div>
+    </div>
+
+    <div class="sub">
+      <h3>Validation rules</h3>
+      <div class="rows">
+        <div class="row" style="grid-template-columns:1fr"><div><p style="font-size:14px">Litres at or above zero. Hours at or below twenty-four. Duplicates deduped on source reference. Unmapped or invalid records quarantined, never silently dropped. Every displayed number traceable to its source record. Attribution never computed from fewer than fourteen days of history.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="assumptions">
+  <div class="container">
+    <div class="sec-head"><span class="idx">07</span><h2>Assumptions and open questions</h2></div>
+    <div class="assump">
+      <ul>
+        <li><b>Field meanings.</b> Diesel is litres and value is rupees. If value turns out to be a meter reading, it is treated as cumulative and the same pipeline uses deltas.</li>
+        <li><b>Site-level diesel is permanent.</b> Records are per site per fill, not per machine. Accepted by design, not a temporary gap.</li>
+        <li><b>Usage is near-daily and per machine.</b> Arrives with the OEM serial or asset code, not in monthly lumps.</li>
+        <li><b>One site per machine per day.</b> Machines that move between sites are attributed day by day to where they worked.</li>
+        <li><b>Norms are directionally right.</b> History refines them weekly, with approval.</li>
+        <li><b>Attribution is probabilistic by nature.</b> A known, accepted limit — not a bug awaiting a later fix.</li>
+        <li><b>Email reaches people.</b> V1 assumes project email distribution lists exist and are read. If a site's PM does not read email, the alert effectively does not exist — to verify during pilot.</li>
+      </ul>
+      <div>
+        <div class="confirm">
+          <h4>Confirm early — biggest unknown</h4>
+          <p>Does each site have one tank with a dispenser meter, or multiple separate fills? Meter readings give far better timing, and the answer decides how much daily resolution this dashboard can ever have.</p>
+        </div>
+        <div class="confirm" style="margin-top:16px">
+          <h4>Confirm early — email recipients</h4>
+          <p>Who exactly should receive the digest versus immediate red alerts, per project? We should collect named recipient lists during the pilot rather than invent a default.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="edge">
+  <div class="container">
+    <div class="sec-head"><span class="idx">08</span><h2>Edge cases</h2></div>
+    <div class="cases">
+      <div class="case"><h4>DG sets, small tools, canteen, site vehicles</h4><p>They burn diesel and appear in no telemetry. The configurable other-use allowance per site absorbs them; without it, every machine looks guilty.</p></div>
+      <div class="case"><h4>Contractor-supplied diesel</h4><p>Those machines are excluded from ideal, otherwise the site looks over budget by design.</p></div>
+      <div class="case"><h4>All machines on identical schedules</h4><p>Mathematically inseparable. Report site level only, and say why in the UI.</p></div>
+      <div class="case"><h4>Single-machine site</h4><p>Site variance is machine variance. Attribution becomes exact.</p></div>
+      <div class="case"><h4>Irregular tanker fills</h4><p>Judge on rolling windows and mark estimated days as estimated.</p></div>
+      <div class="case"><h4>Meter reset or tank replacement</h4><p>Detect the step and do not book it as consumption.</p></div>
+      <div class="case"><h4>Machine moved between sites</h4><p>Attribute per day to the site where it worked.</p></div>
+      <div class="case"><h4>OEM data lag</h4><p>Mark the day as awaiting source, never green. The sync-health page shows the lag.</p></div>
+      <div class="case"><h4>New or unmapped machine</h4><p>Exception queue; backfilled automatically once mapped.</p></div>
+      <div class="case"><h4>Duplicate sync or retro SAP edits</h4><p>Dedupe, recompute, keep the audit trail.</p></div>
+      <div class="case"><h4>Legitimately heavy usage</h4><p>Hard terrain, deeper excavation, long leads. Acknowledged with a cause, kept in history — the site is not "wrong", the norm was.</p></div>
+      <div class="case"><h4>Idle machine fueled</h4><p>Site flag for fuel without work, not an infinite variance.</p></div>
+      <div class="case"><h4>Email undeliverable</h4><p>Bounce on an alert address raises a sync-health issue, same as a failed feed.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="future">
+  <div class="container">
+    <div class="sec-head"><span class="idx">09</span><h2>Future scope</h2></div>
+    <div class="future">
+      <div class="fut"><p>Flow meters or fuel sensors on large machines — attribution moves from inference to measurement.</p></div>
+      <div class="fut"><p>Per-machine dispenser logs, manual or IoT, as an optional accuracy upgrade.</p></div>
+      <div class="fut"><p>WhatsApp morning digest alongside, or instead of, email.</p></div>
+      <div class="fut"><p>In-app notification centre with subscription management.</p></div>
+      <div class="fut"><p>The same two-layer pattern applied to manpower, materials and overheads.</p></div>
+      <div class="fut"><p>Cross-project benchmarking, so machinery capex is decided on data rather than trust.</p></div>
+      <div class="fut"><p>Predictive maintenance from fuel and idle anomalies.</p></div>
+      <div class="fut"><p>Pilferage pattern detection across sites, shifts and operators.</p></div>
+    </div>
+
+    <div class="band">
+      <h3>Success test: the site is red by day two or three.</h3>
+      <div class="side">EX-14 surfaces as the top suspect with a confidence figure attached, instead of the director finding it in month three. The certain-versus-probable distinction stays visible at all times, because the first wrong accusation costs more trust than the tool can buy back.</div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="container">
+    <span class="meta">Diesel reconciliation dashboard · Product requirements · V1</span>
+    <span class="meta">Scope: diesel only · Alerts by email in V1</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================== sample data ============================== */
+var RATE = 74;              // ₹ per litre
+var ALLOW = 0.08;           // other-use allowance share of ideal
+var FLEET_IDLE = 22;        // fleet idle %, for anomaly text
+
+var TYPES = [
+  {t:"Excavator", norm:15},
+  {t:"Backhoe",   norm:6},
+  {t:"Tipper",    norm:4},
+  {t:"Crane",     norm:11},
+  {t:"DG set",    norm:8}
+];
+
+var sites = [
+  {id:"S1",name:"Site 1",loc:"Hyderabad",type:"Residential",issued:27900,ideal:25600,machines:["EX-08"]},
+  {id:"S2",name:"Site 2",loc:"Hyderabad",type:"Commercial",issued:24100,ideal:24900,machines:[]},
+  {id:"S3",name:"Site 3",loc:"Vizag",type:"Earthwork",issued:19400,ideal:15200,machines:["EX-14","JCB-7","TIP-3","PC-21","TIP-9","DG-2"]},
+  {id:"S4",name:"Site 4",loc:"Vizag",type:"Industrial",issued:17600,ideal:16300,machines:[]},
+  {id:"S5",name:"Site 5",loc:"Chennai",type:"Earthwork",issued:19700,ideal:17300,machines:["JCB-2","TIP-6"]},
+  {id:"S6",name:"Site 6",loc:"Chennai",type:"Residential",issued:19800,ideal:17800,machines:[]},
+  {id:"S7",name:"Site 7",loc:"Bangalore",type:"Commercial",issued:21700,ideal:21300,machines:[]},
+  {id:"S8",name:"Site 8",loc:"Bangalore",type:"Residential",issued:0,ideal:0,machines:[]},   // stale feed
+  {id:"S9",name:"Site 9",loc:"Pune",type:"Industrial",issued:33800,ideal:32000,machines:["CR-1","EX-31"]}
+];
+
+var machines = [
+  {code:"EX-14",type:"Excavator",site:"S3",hours:412,implied:22.0,norm:15,conf:82,days:9,own:"Owned",idle:38,night:2,opNote:"New operator joined 16 Oct"},
+  {code:"JCB-7",type:"Backhoe",site:"S3",hours:268,implied:7.4,norm:6,conf:61,days:4,own:"Hired",idle:27,night:0},
+  {code:"TIP-3",type:"Tipper",site:"S3",hours:190,implied:4.3,norm:4,conf:74,days:2,own:"Owned",idle:24,night:0},
+  {code:"PC-21",type:"Excavator",site:"S3",hours:96,implied:14.2,norm:15,conf:88,days:0,own:"Owned",idle:19,night:0},
+  {code:"TIP-9",type:"Tipper",site:"S3",hours:140,implied:3.9,norm:4,conf:81,days:0,own:"Hired",idle:21,night:0},
+  {code:"DG-2",type:"DG set",site:"S3",hours:0,implied:null,norm:8,conf:null,days:0,own:"Owned",noTelm:true},
+  {code:"EX-08",type:"Excavator",site:"S1",hours:380,implied:15.6,norm:15,conf:91,days:1,own:"Owned",idle:22,night:0},
+  {code:"JCB-2",type:"Backhoe",site:"S5",hours:240,implied:7.1,norm:6,conf:78,days:3,own:"Hired",idle:26,night:1},
+  {code:"TIP-6",type:"Tipper",site:"S5",hours:210,implied:4.6,norm:4,conf:69,days:5,own:"Owned",idle:29,night:0},
+  {code:"CR-1",type:"Crane",site:"S9",hours:120,implied:11.8,norm:11,conf:84,days:2,own:"Owned",idle:17,night:0},
+  {code:"EX-31",type:"Excavator",site:"S9",hours:290,implied:11.4,norm:15,conf:86,days:0,own:"Hired",idle:20,night:0}
+];
+
+var alertsSeed = [
+  {id:"A1",sev:"bad", title:"Site 3 red for 9 consecutive days", detail:"Seven-day variance +28% (about 4,200 L, ₹3.1L at ₹74/L). Streak escalated to the director per the three-day rule.", page:"site",target:"S3",mail:"07:42 · 24 Oct", to:"pm.vizag@, director@"},
+  {id:"A2",sev:"warn",title:"JCB-7 above norm at Site 3", detail:"Implied 7.4 L/h against a norm of 6.0. Confidence 61% — treat as a lead, not a verdict.", page:"machine",target:"JCB-7",mail:"07:30 · 24 Oct", to:"pm.vizag@"},
+  {id:"A3",sev:"warn",title:"TIP-6 above norm at Site 5", detail:"Implied 4.6 L/h against a norm of 4.0, five days above norm. Confidence 69%.", page:"machine",target:"TIP-6",mail:"07:30 · 24 Oct", to:"pm.chennai@"},
+  {id:"A4",sev:"warn",title:"Fuel without work at Site 3", detail:"Diesel issued on 2 days when total machine hours were close to zero. Possible idle fueling or tank loss.", page:"site",target:"S3",mail:"08:05 · 23 Oct", to:"pm.vizag@, stores@"},
+  {id:"A5",sev:"neutral",title:"Site 8 diesel feed stale for 2 days", detail:"No diesel records received since 22 Oct. Site shown grey, never green. IT and stores notified by email.", page:"sync",target:"",mail:"09:10 · 23 Oct", to:"it.support@, stores@"}
+];
+
+var unmapped = [
+  {code:"WL-04",type:"Water tanker",note:"Telematics active, no site mapping. Excluded from ideal until mapped."}
+];
+
+var syncSources = [
+  {name:"SAP PM / stores", what:"Site diesel issues", every:"Hourly", last:"07:40 today", ok:true},
+  {name:"OEM telematics A", what:"Excavators, cranes (hours)", every:"2 h", last:"07:12 today", ok:true},
+  {name:"OEM telematics B", what:"Backhoes, tippers (hours, km)", every:"2 h", last:"06:58 today", ok:true},
+  {name:"Site 8 diesel feed", what:"Manual fill log via stores app", every:"Daily by 06:00", last:"22 Oct — stale 2 days", ok:false}
+];
+
+/* ============================== derived state ============================== */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+sites.forEach(function(s,si){
+  var r = mulberry32(1000+si*77);
+  s.issuedD=[];s.idealD=[];
+  var n = 30;
+  var rampFrom = (s.id==="S3")?21:(s.id==="S5")?23:-1;
+  var idealAvg = s.ideal/n, issuedAvg = s.issued/n;
+  for(var i=0;i<n;i++){
+    var ideal = idealAvg*(0.92+r()*0.16);
+    var factor = 1;
+    if(rampFrom>=0 && i>=rampFrom) factor = 1 + (i-rampFrom+1)/(n-rampFrom)*0.55;
+    else if(i>=n-9) factor = 1.02 + r()*0.08;
+    var issued = s.id==="S8" ? 0 : issuedAvg*factor*(0.9+r()*0.2);
+    s.idealD.push(Math.round(ideal));
+    s.issuedD.push(Math.round(issued));
+  }
+  // normalize totals
+  function normTo(arr,total){
+    if(!total){for(var i=0;i<arr.length;i++)arr[i]=0;return}
+    var sum=arr.reduce(function(a,b){return a+b},0)||1;
+    for(var i=0;i<arr.length;i++)arr[i]=Math.round(arr[i]*total/sum);
+  }
+  normTo(s.idealD,s.ideal); normTo(s.issuedD,s.issued);
+});
+
+function siteSlice(s,range){var st=30-range;return{issued:s.issuedD.slice(st),ideal:s.idealD.slice(st)}}
+function siteStats(s,range){
+  var d=siteSlice(s,range);
+  var i=d.issued.reduce(function(a,b){return a+b},0), g=d.ideal.reduce(function(a,b){return a+b},0);
+  var pct = g? (i-g)/g*100 : null;
+  return {issued:i,ideal:g,excess:i-g,pct:pct,status:s.status!=="syncFixed"&&g===0?"neutral":pctStatus(pct)};
+}
+function pctStatus(p){
+  if(p===null) return "neutral";
+  if(p>25) return "bad"; if(p>10) return "warn"; return "ok";
+}
+
+var state = {
+  range:30, site:"all", type:"all", status:"all", group:"site", q:"",
+  causes:{},                 // machine code -> cause
+  siteCauses:{},             // site-level flags closed
+  syncFixed:false,
+  page:"overview", arg:null,
+  norms:TYPES.map(function(t){return{t:t.t,norm:t.norm}})
+};
+var alerts = alertsSeed.map(function(a){return Object.assign({open:true},a)});
+
+/* ============================== helpers ============================== */
+var $=function(s){return document.querySelector(s)};
+var view=$("#view"), crumb=$("#crumb");
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function fmt(n){return n.toLocaleString("en-IN")}
+function fmtL(n){return fmt(n)+" L"}
+function money(l){return "₹"+(l*RATE/100000).toFixed(1)+" L"}
+function pctS(p){return (p>0?"+":"")+p.toFixed(1)+"%"}
+function siteById(id){return sites.filter(function(s){return s.id===id})[0]}
+function machinesOf(id){return machines.filter(function(m){return m.site===id})}
+function normOf(m){var o=state.norms.filter(function(n){return n.t===m.type})[0];return m.normOverride!=null?m.normOverride:(o?o.norm:m.norm)}
+var mailSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>';
+
+function toast(msg){
+  var t=$("#toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("show")},2600);
+}
+function statusChip(st){
+  var m={ok:["ok","Green"],warn:["warn","Amber"],bad:["bad","Red"],neutral:["neutral","Grey"]}[st];
+  return '<span class="status '+m[0]+'"><span class="dot '+m[0]+'"></span>'+m[1]+'</span>';
+}
+function dotCls(st){return {ok:"ok",warn:"warn",bad:"bad",neutral:"neutral"}[st]||"neutral"}
+
+/* line chart svg */
+function lineSVG(issued,ideal){
+  var W=640,H=180,n=issued.length;
+  var max=Math.max.apply(null,issued.concat(ideal))*1.12||1;
+  function pts(arr){return arr.map(function(v,i){return (i/(n-1)*W).toFixed(1)+","+(H-8-v/max*(H-24)).toFixed(1)}).join(" ")}
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-label="Diesel trend">'+
+    '<line class="grid-lines" x1="0" y1="40" x2="'+W+'" y2="40"/>'+
+    '<line class="grid-lines" x1="0" y1="105" x2="'+W+'" y2="105"/>'+
+    '<line class="grid-lines" x1="0" y1="170" x2="'+W+'" y2="170"/>'+
+    '<polyline points="'+pts(issued)+'" fill="none" stroke="var(--bad)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>'+
+    '<polyline points="'+pts(ideal)+'" fill="none" stroke="var(--neutral)" stroke-width="1.6" stroke-dasharray="5 4"/>'+
+  '</svg>';
+}
+/* vertical bars from array, hi above threshold */
+function vbars(arr,hiFrom){
+  var max=Math.max.apply(null,arr)||1;
+  return '<div class="vbars">'+arr.map(function(v,i){
+    return '<i'+(hiFrom!=null&&i>=hiFrom?' class="hi"':'')+' style="height:'+Math.round(v/max*100)+'%"></i>';
+  }).join("")+'</div>';
+}
+/* seeded 14-day hours series for machine */
+function hours14(m){
+  var r=mulberry32(m.code.split("").reduce(function(a,c){return a+c.charCodeAt(0)},0));
+  var base=m.hours/30, out=[];
+  for(var i=0;i<14;i++){
+    var v=base*(0.75+r()*0.5);
+    if(m.days>=3&&i>=5) v=base*(1.1+r()*0.5);
+    out.push(Math.round(v*10)/10);
+  }
+  return out;
+}
+
+/* ============================== pages ============================== */
+function filteredSites(){
+  return sites.filter(function(s){
+    if(state.site!=="all"&&s.id!==state.site)return false;
+    if(state.status!=="all"&&siteStats(s,state.range).status!==state.status)return false;
+    return true;
+  });
+}
+function filteredMachines(){
+  var q=state.q.toLowerCase();
+  return machines.filter(function(m){
+    if(state.site!=="all"&&m.site!==state.site)return false;
+    if(state.type!=="all"&&m.type!==state.type)return false;
+    if(q&&(m.code+" "+m.type+" "+siteById(m.site).name).toLowerCase().indexOf(q)<0)return false;
+    return true;
+  });
+}
+
+function pgOverview(){
+  var range=state.range, ss=filteredSites();
+  var issued=0,ideal=0;
+  sites.forEach(function(s){var st=siteStats(s,range);issued+=st.issued;ideal+=st.ideal});
+  var idealAtNorms=Math.round(ideal*(1-ALLOW));
+  var excess=issued-idealAtNorms, pct=idealAtNorms?excess/idealAtNorms*100:0;
+  // series across all non-grey sites
+  var iss=[],idl=[];
+  for(var i=0;i<range;i++){var a=0,b=0;sites.forEach(function(s){a+=s.issuedD[30-range+i];b+=s.idealD[30-range+i]});iss.push(a);idl.push(b)}
+  // variance by type
+  var byType={};
+  machines.forEach(function(m){
+    if(m.implied==null)return;
+    var dev=(m.implied-normOf(m))/normOf(m);
+    var w=m.hours*(range/30);
+    var o=byType[m.type]||(byType[m.type]={d:0,w:0});
+    o.d+=dev*w;o.w+=w;
+  });
+  var typeRows=Object.keys(byType).map(function(t){
+    var v=byType[t],p=v.w?v.d/v.w*100:0;
+    return {t:t,p:p};
+  }).sort(function(a,b){return b.p-a.p});
+
+  var openAlerts=alerts.filter(function(a){return a.open}).length;
+  var grey=alerts.filter(function(a){return a.id==="A5"&&a.open}).length;
+  // unattributed share at the worst site (S3)
+  var s3=siteById("S3"), s3st=siteStats(s3,range), s3over=0;
+  machinesOf("S3").forEach(function(m){if(m.implied!=null)s3over+=Math.max(0,m.implied-normOf(m))*m.hours*(range/30)});
+  var unattrPct=s3st.excess>0?Math.max(0,Math.round((s3st.excess-s3over)/s3st.excess*100)):0;
+
+  return ''+
+  '<div class="kpis">'+
+    kpi("Diesel issued",fmtL(issued),ss.length+" sites, "+range+" days")+
+    kpi("Ideal at norms",fmtL(idealAtNorms),"after other-use allowance")+
+    kpi("Variance",pctS(pct),(excess>0?fmtL(excess)+" over":"within norms"),pct>10?"bad":"ok")+
+    kpi("Cost impact",money(excess),"at ₹"+RATE+" per litre",excess>0?"bad":"")+
+    kpi("Unattributed",unattrPct+"%","of excess at Site 3")+
+  '</div>'+
+  '<div class="cols">'+
+    '<div class="panel chart"><h5>Issued vs ideal <span class="legend"><span><i style="background:var(--bad)"></i>Issued</span><span><i style="background:var(--neutral)"></i>Ideal</span></span></h5>'+
+      lineSVG(iss,idl)+
+      '<div class="chart-x"><span>'+range+' days ago</span><span>'+(range>14?"15 days":Math.round(range/2)+" days")+'</span><span>Today</span></div></div>'+
+    '<div class="panel"><h5>Variance by machine type</h5>'+
+      typeRows.map(function(r){
+        var cls=r.p>25?"":r.p>12?"w":"g";
+        return '<div class="hbar"><span class="k">'+r.t+'s</span><span class="track"><i class="'+cls+'" style="width:'+Math.min(100,Math.abs(r.p)*2.6)+'%"></i></span><span class="v" style="color:'+(r.p>25?"var(--bad)":r.p>12?"var(--warn)":"var(--ok)")+'">'+pctS(r.p)+'</span></div>';
+      }).join("")+
+      '<h5 style="margin-top:12px;margin-bottom:6px">Site status</h5><div class="sites">'+
+      ss.map(function(s){
+        var st=siteStats(s,range);
+        if(st.status==="neutral") return scard(s,null,"no data","sync late 2d");
+        return scard(s,st.status,pctS(st.pct),fmtL(st.excess));
+      }).join("")+
+      '</div></div>'+
+  '</div>'+
+  '<p class="meta" style="margin-top:10px">'+openAlerts+' open alerts. Daily digest emailed 07:30 · immediate red alert for Site 3 emailed 07:42.</p>';
+}
+function kpi(k,v,d,cls){return '<div class="kpi"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="d'+(cls?" "+cls:"")+'">'+d+'</div></div>'}
+function scard(s,st,vTxt,sTxt){
+  var vc=st?{ok:"ok",warn:"warn",bad:"bad"}[st]:"";
+  var style=st?'':' style="color:var(--neutral)"';
+  return '<div class="scard" data-go="site:'+s.id+'"><div class="t"><span class="dot '+dotCls(st)+'"></span>'+s.name+' · '+s.loc+'</div><div class="v '+vc+'"'+style+'>'+vTxt+'</div><div class="s">'+sTxt+'</div></div>';
+}
+
+function pgSites(){
+  var ss=filteredSites();
+  if(state.group==="machine"){
+    return tableWrap('<table class="dtable"><thead><tr><th>Machine</th><th>Type</th><th>Site</th><th class="n">Implied</th><th class="n">Norm</th><th class="n">Conf</th></tr></thead><tbody>'+
+      filteredMachines().map(function(m){
+        return '<tr class="click" data-go="machine:'+m.code+'"><td><b>'+m.code+'</b></td><td>'+m.type+'</td><td>'+siteById(m.site).name+'</td>'+
+        (m.implied==null?'<td class="n" colspan="3">no telemetry</td>':'<td class="n">'+m.implied.toFixed(1)+'</td><td class="n">'+normOf(m).toFixed(1)+'</td><td class="n">'+(m.conf||"—")+'%</td>')+'</tr>';
+      }).join("")+'</table></div>');
+  }
+  if(state.group==="type"){
+    var byT={};
+    filteredMachines().forEach(function(m){(byT[m.type]||(byT[m.type]=[])).push(m)});
+    return Object.keys(byT).sort().map(function(t){
+      return '<div class="panel" style="margin-bottom:10px"><h5>'+t+' · '+byT[t].length+'</h5><div class="sites">'+
+        byT[t].map(function(m){return '<div class="scard" data-go="machine:'+m.code+'"><div class="t"><span class="dot '+(m.days>0?"bad":"ok")+'"></span>'+m.code+'</div><div class="v">'+(m.implied!=null?m.implied.toFixed(1)+" L/h":"n/a")+'</div><div class="s">'+siteById(m.site).name+'</div></div>'}).join("")+
+      '</div></div>';
+    }).join("");
+  }
+  return '<div class="sites" style="grid-template-columns:repeat(3,1fr)">'+ss.map(function(s){
+    var st=siteStats(s,state.range);
+    if(st.status==="neutral") return scard(s,null,"no data","feed stale — see sync health");
+    return '<div class="scard" data-go="site:'+s.id+'"><div class="t"><span class="dot '+dotCls(st.status)+'"></span>'+s.name+' · '+s.type+'</div><div class="v '+(st.status==="ok"?"ok":st.status==="warn"?"warn":st.status==="bad"?"bad":"")+'">'+pctS(st.pct)+'</div><div class="s">'+fmtL(st.issued)+' issued · '+machinesOf(s.id).length+' machines</div></div>';
+  }).join("")+'</div>';
+}
+
+function pgSite(id){
+  var s=siteById(id), st=siteStats(s,state.range), ms=machinesOf(id);
+  // composition (only meaningful when over)
+  var parts=[];
+  if(st.excess>0&&ms.length){
+    var weights=ms.filter(function(m){return m.implied!=null}).map(function(m){
+      var over=Math.max(0,m.implied-normOf(m))*m.hours*(state.range/30);
+      return {m:m,w:over};
+    });
+    var tw=weights.reduce(function(a,b){return a+b.w},0);
+    var unattrL=Math.max(0,st.excess-tw); // other-use allowance already sits inside ideal
+    function shareL(l){return Math.round(l/st.excess*100)}
+    var shades=[100,60,32];
+    weights.forEach(function(x,i){
+      var p=shareL(x.w);
+      if(p>=2) parts.push({p:p,label:x.m.code+", "+p+"%",c:"color-mix(in oklch,var(--bad) "+shades[Math.min(i,2)]+"%,transparent)"});
+    });
+    parts.push({p:shareL(unattrL),label:"Unattributed, "+shareL(unattrL)+"%",c:"var(--neutral)"});
+  }
+  var suspects=ms.filter(function(m){return m.conf!=null&&m.conf>=50}).sort(function(a,b){return (b.implied/normOf(b))-(a.implied/normOf(a))});
+  var days=14, iss=[],idl=[];
+  for(var i=0;i<days;i++){iss.push(s.issuedD[30-days+i]);idl.push(s.idealD[30-days+i])}
+
+  return ''+
+  '<div class="mhead"><div><div class="mh">'+s.name+', '+s.type.toLowerCase()+'</div><div class="ms">'+s.loc+' &nbsp; '+ms.length+' machines &nbsp; '+state.range+' days</div></div>'+
+  '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+
+    (st.status==="bad"?'<span class="pillflag bad">Red, 9 days</span>':statusChip(st.status))+
+    (id==="S3"&&!state.siteCauses[id]?'<button class="pillflag" id="btnFuelFlag" title="Acknowledge and close this flag">Fuel without work, 2 days — click to close</button>':"")+
+    (state.siteCauses[id]?'<span class="pillflag ok">Fuel flag closed: '+esc(state.siteCauses[id])+'</span>':"")+
+  '</div></div>'+
+  '<div class="bignums">'+
+    '<div class="bignum"><div class="k">Issued</div><div class="v">'+fmtL(st.issued)+'</div></div>'+
+    '<div class="bignum"><div class="k">Ideal</div><div class="v">'+fmtL(st.ideal)+'</div></div>'+
+    '<div class="bignum"><div class="k">Excess</div><div class="v'+(st.excess>0?" bad":"")+'">'+(st.excess>0?fmtL(st.excess)+" ("+money(st.excess)+")":"—")+'</div></div>'+
+  '</div>'+
+  (st.status==="neutral"?
+    '<div class="empty">No diesel data received for 2 days — this site is shown grey and excluded from ranking. See <a data-go="sync:" style="color:var(--accent);cursor:pointer">Sync health</a>.</div>'
+  :
+  '<div class="cols">'+
+    '<div class="panel">'+
+      (parts.length?'<h5>Who used the excess</h5><div class="comp">'+parts.map(function(p){return '<span style="'+p.c+';flex:'+p.p+'"></span>'}).join("")+'</div><div class="complegend">'+parts.map(function(p){return '<span><i style="background:'+p.c+'"></i>'+p.label+'</span>'}).join("")+'</div>':"")+
+      '<h5 style="margin-top:14px">Issued vs ideal, '+days+' days</h5>'+
+      lineSVG(iss,idl)+
+      '<div class="chart-x"><span>'+days+' days ago</span>'+(st.status==="bad"?"<span>Red since day 6</span>":"<span></span>")+'<span>Today</span></div>'+
+    '</div>'+
+    '<div class="panel"><h5>Ranked suspects</h5><div class="scrollx"><table class="dtable">'+
+      '<thead><tr><th>Machine</th><th>Type</th><th class="n">Implied</th><th class="n">Norm</th><th class="n">Dev</th><th>Conf</th></tr></thead><tbody>'+
+      (suspects.length?suspects.map(function(m){
+        var dev=(m.implied-normOf(m))/normOf(m)*100;
+        var cause=state.causes[m.code];
+        return '<tr class="click" data-go="machine:'+m.code+'"><td><b>'+m.code+'</b>'+(cause?' <span class="pillflag ok" style="margin-left:4px">'+esc(cause)+'</span>':"")+'</td><td>'+m.type+'</td><td class="n">'+m.implied.toFixed(1)+'</td><td class="n">'+normOf(m).toFixed(1)+'</td><td class="n" style="color:'+(dev>25?"var(--bad)":dev>10?"var(--warn)":"inherit")+'">'+pctS(dev)+'</td><td>'+m.conf+'%</td></tr>';
+      }).join(""):'<tr><td colspan="6">Machines cannot be separated with '+state.range+' days of data — site level only.</td></tr>')+
+      '</tbody></table></div>'+
+      '<p class="meta" style="font-size:10.5px;margin-top:9px;line-height:1.45">Litres per hour. Implied values are inferred, not measured. Rows under 50% confidence are not listed. Tap a row for the machine detail.</p>'+
+    '</div>'+
+  '</div>');
+}
+
+function pgMachines(){
+  var ms=filteredMachines();
+  return tableWrap('<table class="dtable"><thead><tr><th>Machine</th><th>Type</th><th>Site</th><th class="n">Hours '+state.range+'d</th><th class="n">Implied</th><th class="n">Norm</th><th class="n">Dev</th><th class="n">Days over</th><th>Status</th></tr></thead><tbody>'+
+    ms.map(function(m){
+      var n=normOf(m),dev=m.implied!=null?(m.implied-n)/n*100:null;
+      var stat=m.noTelm?'<span class="pillflag">no telemetry</span>':dev>25&&m.conf>=80?'<span class="pillflag bad">suspect</span>':(dev>10&&m.conf>=50)?'<span class="pillflag">amber</span>':'<span class="pillflag ok">within norm</span>';
+      return '<tr class="click" data-go="machine:'+m.code+'"><td><b>'+m.code+'</b></td><td>'+m.type+'</td><td>'+siteById(m.site).name+'</td><td class="n">'+(m.noTelm?"—":m.hours)+'</td>'+
+      (m.implied==null?'<td class="n" colspan="4">DG set — telemetry not available; covered by other-use allowance</td>':'<td class="n">'+m.implied.toFixed(1)+'</td><td class="n">'+n.toFixed(1)+'</td><td class="n" style="color:'+(dev>25?"var(--bad)":dev>10?"var(--warn)":"inherit")+'">'+pctS(dev)+'</td><td class="n">'+m.days+'</td>')+
+      '<td>'+stat+'</td></tr>';
+    }).join("")+'</tbody></table>'+
+  '<p class="meta" style="margin-top:9px">Implied L/h is inferred from site diesel co-movement — never a measured value. Confidence below 50% is not listed on site pages.</p>');
+}
+
+function pgMachine(code){
+  var m=machines.filter(function(x){return x.code===code})[0];
+  if(!m)return "<p>Machine not found.</p>";
+  var s=siteById(m.site), n=normOf(m), dev=m.implied!=null?(m.implied-n)/n*100:null;
+  var hrs=hours14(m);
+  var cause=state.causes[code];
+  var anomalies=[];
+  if(m.days>=3) anomalies.push(["bad","Run hours "+Math.round(20+m.idle/2)+"% above its own 90-day median on "+m.days+" of the last 9 days."]);
+  if(m.idle>25) anomalies.push(["warn","Idle ratio "+m.idle+"%, against a fleet norm of "+FLEET_IDLE+"%."]);
+  if(m.night>0) anomalies.push(["warn",m.night+" night shift"+(m.night>1?"s":"")+" recorded"+(m.opNote?", "+m.opNote.toLowerCase():"")+"."]);
+  if(m.opNote&&!m.night) anomalies.push(["warn",m.opNote+"."]);
+  if(!anomalies.length) anomalies.push(["ok","No usage anomalies in the last 14 days."]);
+  var notes=["Within norm","Within norm","Hard rock","—","—","Night shift","New operator","—","Night shift","—","New operator","Hard rock","Night shift","—"];
+  var evRows=[];
+  for(var i=13;i>=9;i--){
+    var impl=(m.implied||n)*(0.85+((i*37)%23)/23*0.35);
+    evRows.push({d:(24-(13-i))+" Oct",h:hrs[i],v:impl,note:notes[i]});
+  }
+  return ''+
+  '<div class="mhead"><div><div class="mh">'+m.code+', '+m.type.toLowerCase()+'</div><div class="ms">'+s.name+' &nbsp; '+(m.noTelm?"no telemetry":m.hours+" hours this month")+' &nbsp; '+m.own.toLowerCase()+'</div></div>'+
+  '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">'+
+    (m.noTelm?'<span class="pillflag">no telemetry</span>':dev>25&&m.conf>=80?'<span class="pillflag bad">Suspect, '+m.conf+'% confidence</span>':'<span class="pillflag ok">Within norms</span>')+
+    (m.days>0?'<span class="pillflag">'+m.days+' days above norm</span>':"")+
+  '</div></div>'+
+  '<div class="bignums">'+
+    '<div class="bignum"><div class="k">Implied burn</div><div class="v'+(dev>25?" bad":"")+'">'+(m.implied!=null?m.implied.toFixed(1)+" L/h":"n/a")+'</div></div>'+
+    '<div class="bignum"><div class="k">Norm</div><div class="v">'+n.toFixed(1)+' L/h</div></div>'+
+    '<div class="bignum"><div class="k">Excess cost</div><div class="v">'+(m.implied!=null&&dev>0?money(Math.max(0,m.implied-n)*m.hours*(state.range/30)):"—")+'</div></div>'+
+  '</div>'+
+  '<div class="cols">'+
+    '<div class="panel">'+
+      (m.noTelm?'<div class="empty">No hours data — DG set carries no telemetry. It is covered by the site other-use allowance, not attributed individually.</div>'
+      :'<h5>Hours run, 14 days</h5>'+vbars(hrs,m.days>=3?5:null)+'<div class="chart-x"><span>14 days ago</span><span>Today</span></div>')+
+      '<h5 style="margin-top:14px">Anomalies on this machine</h5><div class="anom">'+
+      anomalies.map(function(a){return '<div><span class="dot '+a[0]+'"></span><span>'+a[1]+'</span></div>'}).join("")+
+      '</div>'+
+    '</div>'+
+    '<div class="panel">'+
+      '<h5>Mark the cause</h5>'+
+      '<p class="meta" style="font-size:10.5px;line-height:1.5">Logging a cause closes the matching alert and keeps it in history. The machine stays visible in trends either way.</p>'+
+      '<div class="causes">'+["Machine fault","Pilferage","Terrain","Underestimated"].map(function(c){
+        return '<button class="cause'+(cause===c?" on":"")+'" data-cause="'+c+'" data-mc="'+m.code+'">'+c+'</button>';
+      }).join("")+'</div>'+
+      (cause?'<div class="closed-note"><span class="dot ok"></span>Cause logged — related alerts closed and removed from the digest.</div>':"")+
+      (m.noTelm?"":'<h5 style="margin-top:14px">Evidence trail</h5><div class="scrollx"><table class="dtable">'+
+        '<thead><tr><th>Date</th><th class="n">Hours</th><th class="n">Implied</th><th>Note</th></tr></thead><tbody>'+
+        evRows.map(function(r){return '<tr><td>'+r.d+'</td><td class="n">'+r.h.toFixed(1)+'</td><td class="n">'+r.v.toFixed(1)+'</td><td>'+r.note+'</td></tr>'}).join("")+
+        '</tbody></table></div>')+
+    '</div>'+
+  '</div>';
+}
+
+function siteAlertClosed(a){
+  if(a.id==="A5") return state.syncFixed;
+  if(a.id==="A4") return !!state.siteCauses[a.target];
+  if(a.id==="A1") return !!state.siteCauses[a.target]||machinesOf(a.target).some(function(m){return !!state.causes[m.code]});
+  return !!state.causes[a.target];
+}
+function pgAlerts(){
+  var mailBanner='<div class="email-banner">'+mailSvg+'<p><b>V1 delivers alerts by email.</b> Daily digest at 07:30 to the project manager and stores; immediate email when a site goes red or a 3-day streak escalates (director copied). This page mirrors what was sent, with delivery status per alert.</p></div>';
+  var rows=alerts.filter(function(a){
+    if(a.page==="site"&&state.site!=="all"&&a.target!==state.site)return false;
+    return true;
+  });
+  if(!rows.length)return mailBanner+'<div class="empty">No alerts for this filter.</div>';
+  return mailBanner+'<div class="panel">'+rows.map(function(a){
+    var open=a.open&&!siteAlertClosed(a);
+    return '<div class="alert-row">'+
+      '<span class="dot '+a.sev+'" style="margin-top:6px"></span>'+
+      '<div><h6>'+esc(a.title)+'</h6><p>'+esc(a.detail)+'</p>'+
+      '<div class="meta-line">'+mailSvg.replace('<svg','<svg style="display:inline;width:10px;height:10px;vertical-align:-1px"')+' Email sent '+a.mail+' → '+a.to+(open?"":" · closed")+'</div></div>'+
+      '<div class="alert-actions">'+(open?'<span class="pillflag bad">Open</span>':'<span class="pillflag ok">Closed</span>')+
+      '<button class="btn" data-go="'+a.page+':'+a.target+'">View</button></div>'+
+    '</div>';
+  }).join("")+'</div>';
+}
+
+function pgNorms(){
+  return '<div class="cols even">'+
+  '<div class="panel"><h5>Norms by machine type (litres per hour)</h5><table class="dtable"><thead><tr><th>Type</th><th class="n">Norm L/h</th><th>Machines</th></tr></thead><tbody>'+
+    state.norms.map(function(n){
+      var cnt=machines.filter(function(m){return m.type===n.t}).length;
+      return '<tr><td><b>'+n.t+'</b></td><td class="n"><input class="nnorm" type="number" step="0.5" min="0.5" value="'+n.norm+'" data-norm="'+n.t+'"></td><td>'+cnt+'</td></tr>';
+    }).join("")+
+  '</tbody></table><p class="meta" style="font-size:10.5px;margin-top:9px">Edit a norm and everything recomputes immediately. In production, weekly recalibration proposals arrive by email for approval before they take effect.</p></div>'+
+  '<div class="panel"><h5>Per-machine overrides &amp; site allowance</h5><table class="dtable"><tbody>'+
+    '<tr><td><b>EX-31</b> · Site 9</td><td>Hard-rock override, 16.0 L/h</td></tr>'+
+    '<tr><td><b>DG-2</b> · Site 3</td><td>No telemetry — excluded from attribution, absorbed by allowance</td></tr>'+
+    '<tr><td><b>Other-use allowance</b></td><td>8% of ideal per site (DG sets, small tools, site vehicles)</td></tr>'+
+  '</tbody></table><p class="meta" style="font-size:10.5px;margin-top:9px">Overrides are set per machine with a reason; the reason shows wherever the machine appears.</p></div>'+
+  '</div>';
+}
+
+function pgSync(){
+  var fixed=state.syncFixed;
+  var src=syncSources.map(function(x){
+    var ok=x.ok||fixed&&x.name.indexOf("Site 8")===0;
+    return '<tr><td><b>'+x.name+'</b></td><td>'+x.what+'</td><td class="n">'+x.every+'</td><td class="n">'+(ok?x.last.replace("22 Oct — stale 2 days","just now"):x.last)+'</td><td>'+(ok?'<span class="pillflag ok">healthy</span>':(fixed?'':'<button class="btn primary" id="btnRetry">Retry sync</button> <span class="pillflag bad">stale</span>'))+'</td></tr>';
+  }).join("");
+  return '<div class="cols even">'+
+  '<div class="panel"><h5>Feeds</h5><table class="dtable"><thead><tr><th>Source</th><th>Content</th><th class="n">Frequency</th><th class="n">Last sync</th><th></th></tr></thead><tbody>'+src+'</tbody></table>'+
+  (fixed?'<p class="meta" style="margin-top:9px">Site 8 backfilled from stores records; its days were recomputed and the sync alert closed. A bounce or failure here emails IT immediately — same as a failed feed.</p>':'<p class="meta" style="margin-top:9px">A missing feed never renders as a green site. It shows grey, and an email goes to IT and stores the same morning.</p>')+'</div>'+
+  '<div class="panel"><h5>Exception queue</h5><table class="dtable"><thead><tr><th>Item</th><th>Issue</th><th></th></tr></thead><tbody>'+
+    (state.unmappedDone?
+      '<tr><td><b>WL-04</b> · water tanker</td><td>Mapped to Site 7 — history backfilled, excluded from diesel attribution.</td><td><span class="pillflag ok">done</span></td></tr>'
+    :
+      unmapped.map(function(u){return '<tr><td><b>'+u.code+'</b> · '+u.type.toLowerCase()+'</td><td>'+u.note+'</td><td><button class="btn" id="btnMap">Assign to site</button></td></tr>'}).join(""))+
+  '</tbody></table><p class="meta" style="margin-top:9px">Unmapped machines are quarantined from every calculation until resolved — never silently dropped.</p></div>'+
+  '</div>';
+}
+
+function tableWrap(inner){return '<div class="panel">'+inner+'</div>'}
+
+/* ============================== router ============================== */
+var pages={overview:pgOverview,sites:pgSites,machines:pgMachines,alerts:pgAlerts,norms:pgNorms,sync:pgSync};
+function go(page,arg){state.page=page;state.arg=arg||null;render()}
+function render(){
+  document.querySelectorAll(".rail a").forEach(function(a){a.classList.toggle("on",a.dataset.nav===state.page)});
+  $("#cntSites").textContent=String(filteredSites().length);
+  $("#cntMachines").textContent=String(machines.length);
+  $("#cntAlerts").textContent=String(alerts.filter(function(a){return a.open&&!siteAlertClosed(a)}).length);
+  $("#cntSync").textContent=state.syncFixed?"0":"1";
+  $("#fSite").style.display=(state.page==="overview"||state.page==="sites"||state.page==="machines"||state.page==="alerts")?"":"none";
+  $("#fType").style.display=state.page==="machines"?"":"none";
+  $("#fGroup").style.display=state.page==="sites"?"":"none";
+  var v;
+  if(state.page==="site")v=pgSite(state.arg);
+  else if(state.page==="machine")v=pgMachine(state.arg);
+  else v=pages[state.page]();
+  view.innerHTML=v;
+  var c="";
+  if(state.page==="site")c='<a data-nav="sites">Sites</a> › '+siteById(state.arg).name;
+  else if(state.page==="machine")c='<a data-nav="machines">Machines</a> › '+state.arg;
+  crumb.innerHTML=c;
+  view.querySelectorAll("[data-go]").forEach(function(el){
+    el.addEventListener("click",function(ev){
+      ev.stopPropagation();
+      var p=el.dataset.go.split(":");
+      go(p[0],p[1]||null);
+    });
+  });
+  view.querySelectorAll("[data-nav]").forEach(function(el){
+    el.addEventListener("click",function(){go(el.dataset.nav)});
+  });
+  view.querySelectorAll("[data-cause]").forEach(function(el){
+    el.addEventListener("click",function(){
+      var code=el.dataset.mc,c=el.dataset.cause;
+      if(state.causes[code]===c){delete state.causes[code];toast("Cause removed — alert reopened")}
+      else{state.causes[code]=c;toast("Cause logged: "+c+" — related email alerts closed")}
+      render();
+    });
+  });
+  view.querySelectorAll("[data-norm]").forEach(function(el){
+    el.addEventListener("change",function(){
+      var t=el.dataset.norm,v=parseFloat(el.value);
+      if(!(v>0)){toast("Norm must be positive");render();return}
+      state.norms.forEach(function(n){if(n.t===t)n.norm=v});
+      machines.forEach(function(m){if(m.type===t&&!m.normOverride)m.norm=v});
+      toast(t+" norm set to "+v+" L/h — all views recomputed");
+      render();
+    });
+  });
+  var fuel=view.querySelector("#btnFuelFlag");
+  if(fuel)fuel.addEventListener("click",function(ev){
+    ev.stopPropagation();
+    state.siteCauses[state.arg]="acknowledged";
+    toast("Fuel-without-work flag closed — removed from digest and history kept");
+    render();
+  });
+  var retry=view.querySelector("#btnRetry");
+  if(retry)retry.addEventListener("click",function(){
+    retry.disabled=true;retry.textContent="Syncing…";
+    setTimeout(function(){
+      state.syncFixed=true;
+      var s8=siteById("S8");s8.issued=16900;s8.ideal=16400;
+      var r=mulberry32(42);
+      for(var i=0;i<30;i++){s8.idealD[i]=Math.round(16400/30*(0.95+r()*0.1));s8.issuedD[i]=Math.round(s8.idealD[i]*(1+r()*0.06))}
+      toast("Site 8 feed restored — 2 days backfilled, sync alert closed");
+      render();
+    },1600);
+  });
+  var map=view.querySelector("#btnMap");
+  if(map)map.addEventListener("click",function(){
+    state.unmappedDone=true;
+    toast("WL-04 mapped to Site 7 — exception cleared, history backfilled");
+    render();
+  });
+}
+
+/* ============================== filters ============================== */
+document.querySelectorAll("[data-range]").forEach(function(b){
+  b.addEventListener("click",function(){
+    state.range=+b.dataset.range;
+    document.querySelectorAll("[data-range]").forEach(function(x){x.classList.toggle("on",x===b)});
+    render();
+  });
+});
+document.querySelectorAll("[data-status]").forEach(function(b){
+  b.addEventListener("click",function(){
+    state.status=b.dataset.status;
+    document.querySelectorAll("[data-status]").forEach(function(x){x.classList.toggle("on",x===b)});
+    render();
+  });
+});
+sites.forEach(function(s){var o=document.createElement("option");o.value=s.id;o.textContent=s.name+" · "+s.loc;$("#fSite").appendChild(o)});
+$("#fSite").addEventListener("change",function(){state.site=this.value;render()});
+$("#fType").addEventListener("change",function(){state.type=this.value;render()});
+$("#fGroup").addEventListener("change",function(){state.group=this.value;render()});
+$("#fQ").addEventListener("input",function(){state.q=this.value;if(state.page!=="machines"&&state.page!=="sites")go("machines");else render()});
+$("#btnReset").addEventListener("click",function(){
+  state.range=30;state.site="all";state.type="all";state.status="all";state.group="site";state.q="";
+  document.querySelectorAll("[data-range]").forEach(function(x){x.classList.toggle("on",x.dataset.range==="30")});
+  document.querySelectorAll("[data-status]").forEach(function(x){x.classList.toggle("on",x.dataset.status==="all")});
+  $("#fSite").value="all";$("#fType").value="all";$("#fGroup").value="site";$("#fQ").value="";
+  render();toast("Filters reset");
+});
+document.querySelectorAll(".rail a").forEach(function(a){
+  a.addEventListener("click",function(){go(a.dataset.nav)});
+});
+
+render();
+})();
+</script>
+</body>
+</html>
